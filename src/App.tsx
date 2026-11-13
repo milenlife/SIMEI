@@ -59,15 +59,19 @@ import {
   STAGES,
 } from './utils/endorsementLogic';
 import { formatGoogleSignInError } from './utils/authErrorLogic';
+import {
+  clearAuthSession,
+  GUEST_USER_PROFILE,
+  loadAuthSession,
+  resolveGoogleUserRole,
+  saveAuthSession,
+} from './utils/sessionLogic';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<'dashboard' | 'endorsements' | 'reports' | 'ai-tools'>(
     'dashboard'
   );
   const [endorsementView, setEndorsementView] = useState<'kanban' | 'table'>('kanban');
-
-  // Authentication & Login Page state (First screen user sees on visit)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   // Accounts state (seeded with Owner, Admin, and Talents)
   const [accounts, setAccounts] = useState<UserAccount[]>(() => {
@@ -105,6 +109,11 @@ export default function App() {
     }
   });
 
+  // Persistent authentication & current active user (survives refresh until explicit logout)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    () => loadAuthSession(accounts).isAuthenticated
+  );
+
   // State for Endorsements & Notifications
   const [endorsements, setEndorsements] = useState<Endorsement[]>(() => {
     const saved = localStorage.getItem('endorsehub_items');
@@ -121,16 +130,10 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Current active user & role simulation
-  const [currentUser, setCurrentUser] = useState<UserProfile>(() => {
-    const savedRole = localStorage.getItem('endorsehub_role') as UserRole;
-    return {
-      uid: 'user_owner_01',
-      email: 'mami.elen14@gmail.com',
-      displayName: 'Elena Permata (Mami Elen)',
-      role: savedRole || 'owner',
-    };
-  });
+  // Current active user restored from persistent session
+  const [currentUser, setCurrentUser] = useState<UserProfile>(
+    () => loadAuthSession(accounts).user
+  );
 
   const [spreadsheetId, setSpreadsheetId] = useState<string>(() => {
     return localStorage.getItem('endorsehub_sheet_id') || '';
@@ -175,22 +178,24 @@ export default function App() {
 
   // Firebase auth & real-time listeners initialization
   useEffect(() => {
-    const unsubscribeAuth = initAuth((user, token) => {
-      let role: UserRole = 'talent';
-      const emailLower = (user.email || '').trim().toLowerCase();
-      if (emailLower === 'mami.elen14@gmail.com' || emailLower === 'lovian.yogi@gmail.com') {
-        role = 'owner';
-      } else if (emailLower.includes('admin')) {
-        role = 'admin';
+    const unsubscribeAuth = initAuth((user) => {
+      const stored = loadAuthSession(accounts);
+      // Do not overwrite an active Email/Password session with a cached Firebase Google session
+      if (stored.isAuthenticated && stored.provider === 'password') {
+        return;
       }
-      setCurrentUser((prev) => ({
-        ...prev,
+
+      const role = resolveGoogleUserRole(user.email || '', accounts);
+      const googleProfile: UserProfile = {
         uid: user.uid,
-        email: user.email || prev.email,
-        displayName: user.displayName || prev.displayName,
+        email: user.email || '',
+        displayName: user.displayName || 'Pengguna Google',
         photoURL: user.photoURL || undefined,
         role,
-      }));
+      };
+      setCurrentUser(googleProfile);
+      setIsAuthenticated(true);
+      saveAuthSession(googleProfile, 'google');
     });
 
     // Real-time Firestore subscriptions (gracefully falls back if rules or network offline)
@@ -353,13 +358,18 @@ export default function App() {
     try {
       const res = await googleSignIn();
       if (res?.user) {
-        setCurrentUser({
-          uid: res.user.uid,
-          email: res.user.email || 'user@gmail.com',
-          displayName: res.user.displayName || 'Pengguna Google',
-          photoURL: res.user.photoURL || undefined,
-          role: res.role,
-        });
+        if (!isAuthenticated) {
+          const resolvedRole = resolveGoogleUserRole(res.user.email || '', accounts);
+          const googleProfile: UserProfile = {
+            uid: res.user.uid,
+            email: res.user.email || 'user@gmail.com',
+            displayName: res.user.displayName || 'Pengguna Google',
+            photoURL: res.user.photoURL || undefined,
+            role: resolvedRole,
+          };
+          setCurrentUser(googleProfile);
+          saveAuthSession(googleProfile, 'google');
+        }
         return { success: true };
       }
       return {
@@ -374,16 +384,17 @@ export default function App() {
     }
   };
 
-  // Handle Logout
+  // Handle Logout (only triggered explicitly by the logged-in user)
   const handleLogout = async () => {
-    await logout();
-    setCurrentUser({
-      uid: 'guest',
-      email: '',
-      displayName: 'Tamu',
-      role: 'talent',
-    });
+    clearAuthSession();
+    try {
+      await logout();
+    } catch (err) {
+      console.warn('Firebase signOut warning:', err);
+    }
+    setCurrentUser(GUEST_USER_PROFILE);
     setIsAuthenticated(false);
+    setCurrentTab('dashboard');
   };
 
   // Handle importing data from Google Sheets
@@ -435,6 +446,7 @@ export default function App() {
         <LoginPage
           accounts={accounts}
           onLoginSuccess={(userProfile) => {
+            saveAuthSession(userProfile, 'password');
             setCurrentUser(userProfile);
             setIsAuthenticated(true);
             setAccounts((prev) => {
@@ -682,6 +694,8 @@ export default function App() {
           onUpdateProfile={(updatedProfile, updatedAccounts) => {
             setCurrentUser(updatedProfile);
             setAccounts(updatedAccounts);
+            const activeProvider = loadAuthSession(updatedAccounts).provider || 'password';
+            saveAuthSession(updatedProfile, activeProvider);
             localStorage.setItem('endorsehub_user_accounts', JSON.stringify(updatedAccounts));
             localStorage.setItem('endorsehub_role', updatedProfile.role);
           }}
