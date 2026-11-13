@@ -220,6 +220,22 @@ export function updateUserProfile(
   };
 }
 
+export function columnNumberToLetter(colCount: number): string {
+  let n = Math.max(1, Math.floor(colCount));
+  let letters = '';
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    letters = String.fromCharCode(65 + rem) + letters;
+    n = Math.floor((n - 1) / 26);
+  }
+  return letters;
+}
+
+export function getAccountsSheetRange(rowCount: number): string {
+  const lastCol = columnNumberToLetter(GOOGLE_SHEETS_ACCOUNTS_HEADERS.length);
+  return `${GOOGLE_SHEETS_ACCOUNTS_TAB_NAME}!A1:${lastCol}${Math.max(1, rowCount)}`;
+}
+
 /**
  * Converts user accounts to Google Sheet 2D array for dedicated tab Akun_Talent
  */

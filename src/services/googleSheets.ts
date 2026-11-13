@@ -112,9 +112,12 @@ export async function syncEndorsementsToSheet(
   const cleanId = extractSpreadsheetId(spreadsheetId);
   const rows = formatEndorsementsToSheetRows(endorsements);
 
-  // Clear previous values first or overwrite
+  // Overwrite range matching exact row count and 16 columns (A..P)
+  const targetRange = `A1:P${rows.length}`;
   const updateRes = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${cleanId}/values/A1:P${rows.length + 50}?valueInputOption=USER_ENTERED`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${cleanId}/values/${encodeURIComponent(
+      targetRange
+    )}?valueInputOption=USER_ENTERED`,
     {
       method: 'PUT',
       headers: {
@@ -122,7 +125,7 @@ export async function syncEndorsementsToSheet(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        range: `A1:P${rows.length}`,
+        range: targetRange,
         majorDimension: 'ROWS',
         values: rows,
       }),
@@ -204,10 +207,21 @@ export async function syncAccountsToDedicatedSheet(
   }
 
   const cleanId = extractSpreadsheetId(spreadsheetId);
-  const { formatAccountsToSheetRows, GOOGLE_SHEETS_ACCOUNTS_TAB_NAME } = await import(
-    '../utils/accountLogic'
+  const {
+    formatAccountsToSheetRows,
+    getAccountsSheetRange,
+    GOOGLE_SHEETS_ACCOUNTS_TAB_NAME,
+  } = await import('../utils/accountLogic');
+  // Sanitize any cell exceeding Google Sheets' 50,000-character limit (e.g. large base64 avatars)
+  const rows = formatAccountsToSheetRows(accounts).map((row) =>
+    row.map((cell) =>
+      typeof cell === 'string' && cell.length > 49000
+        ? cell.startsWith('data:image/')
+          ? ''
+          : cell.slice(0, 49000)
+        : cell
+    )
   );
-  const rows = formatAccountsToSheetRows(accounts);
 
   // 1. Check if tab 'Akun_Talent' already exists
   const metaRes = await fetch(
@@ -260,8 +274,8 @@ export async function syncAccountsToDedicatedSheet(
     }
   }
 
-  // 3. Write account rows into Akun_Talent tab
-  const range = `${GOOGLE_SHEETS_ACCOUNTS_TAB_NAME}!A1:I${rows.length}`;
+  // 3. Write account rows into Akun_Talent tab using dynamic range covering all columns (A..K)
+  const range = getAccountsSheetRange(rows.length);
   const updateRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${cleanId}/values/${encodeURIComponent(
       range
@@ -304,14 +318,15 @@ export async function importAccountsFromDedicatedSheet(
   }
 
   const cleanId = extractSpreadsheetId(spreadsheetId);
-  const { parseSheetRowsToAccounts, GOOGLE_SHEETS_ACCOUNTS_TAB_NAME } = await import(
-    '../utils/accountLogic'
-  );
+  const {
+    parseSheetRowsToAccounts,
+    getAccountsSheetRange,
+  } = await import('../utils/accountLogic');
 
   const readRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${cleanId}/values/${encodeURIComponent(
-      GOOGLE_SHEETS_ACCOUNTS_TAB_NAME
-    )}!A1:I200`,
+      getAccountsSheetRange(200)
+    )}`,
     {
       headers: { Authorization: `Bearer ${token}` },
     }

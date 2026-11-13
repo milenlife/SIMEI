@@ -8,6 +8,9 @@ import {
   updateUserProfile,
   formatAccountsToSheetRows,
   parseSheetRowsToAccounts,
+  getAccountsSheetRange,
+  columnNumberToLetter,
+  GOOGLE_SHEETS_ACCOUNTS_HEADERS,
   GOOGLE_SHEETS_ACCOUNTS_TAB_NAME,
 } from './accountLogic';
 import { UserAccount } from '../types/endorsement';
@@ -124,6 +127,13 @@ test('formatAccountsToSheetRows and parseSheetRowsToAccounts serialize for Akun_
   assert.equal(parsed[0].email, 'owner@test.com');
   assert.equal(parsed[2].category, 'Beauty');
   assert.equal(parsed[2].password, 'talentSecret');
+
+  // Verify range covers all 11 columns (A..K) so Google Sheets never throws column J mismatch
+  assert.equal(GOOGLE_SHEETS_ACCOUNTS_HEADERS.length, 11);
+  assert.equal(rows[0].length, 11);
+  assert.equal(rows[1].length, 11);
+  assert.equal(columnNumberToLetter(11), 'K');
+  assert.equal(getAccountsSheetRange(6), 'Akun_Talent!A1:K6');
 });
 
 test('updateUserProfile allows user to edit their own profile but blocks editing other accounts', () => {
