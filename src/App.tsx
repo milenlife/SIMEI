@@ -58,6 +58,7 @@ import {
   getStageByIndex,
   STAGES,
 } from './utils/endorsementLogic';
+import { formatGoogleSignInError } from './utils/authErrorLogic';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<'dashboard' | 'endorsements' | 'reports' | 'ai-tools'>(
@@ -188,7 +189,7 @@ export default function App() {
         email: user.email || prev.email,
         displayName: user.displayName || prev.displayName,
         photoURL: user.photoURL || undefined,
-        role: prev.role || role,
+        role,
       }));
     });
 
@@ -348,7 +349,7 @@ export default function App() {
   };
 
   // Handle Google Sign in
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: string }> => {
     try {
       const res = await googleSignIn();
       if (res?.user) {
@@ -359,9 +360,17 @@ export default function App() {
           photoURL: res.user.photoURL || undefined,
           role: res.role,
         });
+        return { success: true };
       }
-    } catch (e: any) {
+      return {
+        success: false,
+        error: 'Login dengan akun Google tidak mengembalikan data pengguna.',
+      };
+    } catch (e: unknown) {
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+      const errorMsg = formatGoogleSignInError(e, hostname);
       console.warn('Google sign in error:', e);
+      return { success: false, error: errorMsg };
     }
   };
 
@@ -447,8 +456,11 @@ export default function App() {
             localStorage.setItem('endorsehub_user_accounts', JSON.stringify(updatedAccounts));
           }}
           onGoogleSignIn={async () => {
-            await handleGoogleSignIn();
-            setIsAuthenticated(true);
+            const res = await handleGoogleSignIn();
+            if (res.success) {
+              setIsAuthenticated(true);
+            }
+            return res;
           }}
         />
         <OfflineIndicator />

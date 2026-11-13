@@ -23,7 +23,7 @@ interface LoginPageProps {
   accounts: UserAccount[];
   onLoginSuccess: (userProfile: UserProfile) => void;
   onUpdateAccounts: (updatedAccounts: UserAccount[]) => void;
-  onGoogleSignIn: () => void;
+  onGoogleSignIn: () => Promise<{ success: boolean; error?: string } | void> | void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({
@@ -36,6 +36,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Change Password Modal State
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -204,8 +205,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           {/* Google Sign-in Official Button */}
           <button
             type="button"
-            onClick={onGoogleSignIn}
-            className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 py-2.5 text-xs font-semibold text-zinc-200 transition-colors shadow-sm"
+            disabled={isGoogleLoading}
+            onClick={async () => {
+              setErrorMessage(null);
+              setIsGoogleLoading(true);
+              try {
+                const res = await onGoogleSignIn();
+                if (res && !res.success && res.error) {
+                  setErrorMessage(res.error);
+                }
+              } finally {
+                setIsGoogleLoading(false);
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-wait py-2.5 text-xs font-semibold text-zinc-200 transition-colors shadow-sm cursor-pointer"
           >
             <svg className="h-4 w-4 shrink-0" viewBox="0 0 48 48">
               <path

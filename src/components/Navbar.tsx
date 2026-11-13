@@ -136,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Layers className="h-4 w-4 text-violet-400 shrink-0" />
-                <span className="whitespace-nowrap"><span className="hidden xl:inline">Pipeline & </span>Dashboard</span>
+                <span className="whitespace-nowrap"><span className="hidden 2xl:inline">Pipeline & </span>Dashboard</span>
               </button>
 
               <button
@@ -148,7 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Users className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span className="whitespace-nowrap"><span className="hidden xl:inline">Daftar </span>Endorsement</span>
+                <span className="whitespace-nowrap"><span className="hidden 2xl:inline">Daftar </span>Endorsement</span>
               </button>
 
               <button
@@ -160,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <TrendingUp className="h-4 w-4 text-amber-400 shrink-0" />
-                <span className="whitespace-nowrap"><span className="hidden xl:inline">Laporan </span>Bulanan</span>
+                <span className="whitespace-nowrap"><span className="hidden 2xl:inline">Laporan </span>Bulanan</span>
               </button>
 
               <button
