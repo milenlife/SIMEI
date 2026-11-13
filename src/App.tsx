@@ -22,6 +22,7 @@ import { LoginPage } from './components/LoginPage';
 import { MonthlyReportView } from './components/MonthlyReportView';
 import { Navbar } from './components/Navbar';
 import { NotificationDrawer } from './components/NotificationDrawer';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { ProfileModal } from './components/ProfileModal';
 import { TalentAccountManagerModal } from './components/TalentAccountManagerModal';
 import { INITIAL_ACCOUNTS } from './data/initialAccounts';
@@ -421,34 +422,37 @@ export default function App() {
   // If not authenticated, render Login Page as requested
   if (!isAuthenticated) {
     return (
-      <LoginPage
-        accounts={accounts}
-        onLoginSuccess={(userProfile) => {
-          setCurrentUser(userProfile);
-          setIsAuthenticated(true);
-          setAccounts((prev) => {
-            const clean = (userProfile.email || '').trim().toLowerCase();
-            const exists = prev.some((a) => (a.email || '').trim().toLowerCase() === clean);
-            if (!exists) {
-              const fromInit = INITIAL_ACCOUNTS.find((a) => (a.email || '').trim().toLowerCase() === clean);
-              if (fromInit) {
-                const next = [fromInit, ...prev];
-                localStorage.setItem('endorsehub_user_accounts', JSON.stringify(next));
-                return next;
+      <>
+        <LoginPage
+          accounts={accounts}
+          onLoginSuccess={(userProfile) => {
+            setCurrentUser(userProfile);
+            setIsAuthenticated(true);
+            setAccounts((prev) => {
+              const clean = (userProfile.email || '').trim().toLowerCase();
+              const exists = prev.some((a) => (a.email || '').trim().toLowerCase() === clean);
+              if (!exists) {
+                const fromInit = INITIAL_ACCOUNTS.find((a) => (a.email || '').trim().toLowerCase() === clean);
+                if (fromInit) {
+                  const next = [fromInit, ...prev];
+                  localStorage.setItem('endorsehub_user_accounts', JSON.stringify(next));
+                  return next;
+                }
               }
-            }
-            return prev;
-          });
-        }}
-        onUpdateAccounts={(updatedAccounts) => {
-          setAccounts(updatedAccounts);
-          localStorage.setItem('endorsehub_user_accounts', JSON.stringify(updatedAccounts));
-        }}
-        onGoogleSignIn={async () => {
-          await handleGoogleSignIn();
-          setIsAuthenticated(true);
-        }}
-      />
+              return prev;
+            });
+          }}
+          onUpdateAccounts={(updatedAccounts) => {
+            setAccounts(updatedAccounts);
+            localStorage.setItem('endorsehub_user_accounts', JSON.stringify(updatedAccounts));
+          }}
+          onGoogleSignIn={async () => {
+            await handleGoogleSignIn();
+            setIsAuthenticated(true);
+          }}
+        />
+        <OfflineIndicator />
+      </>
     );
   }
 
@@ -671,6 +675,8 @@ export default function App() {
           }}
         />
       )}
+
+      <OfflineIndicator />
     </div>
   );
 }

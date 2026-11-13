@@ -200,7 +200,7 @@ export const TalentAccountManagerModal: React.FC<TalentAccountManagerModalProps>
   };
 
   const copyCreds = (acc: UserAccount) => {
-    const text = `Akun EndorseHub Talent:\nNama: ${acc.displayName}\nEmail: ${acc.email}\nPassword: ${acc.password}\nLogin di: ${window.location.origin}`;
+    const text = `Akun SIMEI Talent:\nNama: ${acc.displayName}\nEmail: ${acc.email}\nPassword: ${acc.password}\nLogin di: ${window.location.origin}`;
     navigator.clipboard.writeText(text);
     setCopiedId(acc.id);
     setTimeout(() => setCopiedId(null), 2500);
@@ -363,7 +363,7 @@ export const TalentAccountManagerModal: React.FC<TalentAccountManagerModalProps>
 
               <div className="flex items-center justify-between pt-2">
                 <span className="text-[11px] text-zinc-400">
-                  Talent dapat langsung menggunakan email & password ini untuk masuk ke EndorseHub.
+                  Talent dapat langsung menggunakan email & password ini untuk masuk ke SIMEI.
                 </span>
                 <button
                   type="submit"

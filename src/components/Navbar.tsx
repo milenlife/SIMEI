@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types/endorsement';
 import { canManageTalentAccounts } from '../utils/accountLogic';
+import { resolvePublicAssetPath } from '../utils/pwaLogic';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   currentTab: 'dashboard' | 'endorsements' | 'reports' | 'ai-tools';
@@ -82,6 +84,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const activeBadge = getRoleBadge(currentUser.role);
+  const logoSrc = resolvePublicAssetPath('simei-logo.png', import.meta.env.BASE_URL);
 
   return (
     <>
@@ -100,25 +103,27 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* Brand & Logo */}
-            <div
+            <button
+              type="button"
               onClick={() => onSelectTab('dashboard')}
-              className="flex cursor-pointer items-center gap-2 sm:gap-2.5 transition-transform hover:scale-[1.02] shrink-0"
+              className="flex cursor-pointer items-center gap-2 sm:gap-2.5 text-left transition-transform hover:scale-[1.02] shrink-0"
             >
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-pink-500 shadow-md shadow-violet-500/20 shrink-0">
-                <Sparkles className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-white" />
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-white p-1 shadow-md shadow-sky-500/15 shrink-0 overflow-hidden">
+                <img
+                  src={logoSrc}
+                  alt="Logo SIMEI"
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-base sm:text-lg font-bold tracking-tight text-white whitespace-nowrap">
-                    EndorseHub
-                  </span>
-                  <span className="rounded bg-gradient-to-r from-violet-500 to-pink-500 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider">
-                    Pro
+                    SIMEI
                   </span>
                 </div>
-                <p className="text-xs text-zinc-400 hidden 2xl:block">Sistem Manajemen Endorsement</p>
+                <p className="text-[11px] text-zinc-400 hidden 2xl:block">Sistem Manajemen Endorsement</p>
               </div>
-            </div>
+            </button>
 
             {/* Desktop Navigation Tabs (Visible on lg: 1024px and above) */}
             <nav className="hidden lg:flex items-center gap-1 ml-1 xl:ml-3 shrink-0">
@@ -200,6 +205,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="hidden 2xl:inline whitespace-nowrap">Akun Talent</span>
               </button>
             )}
+
+            {/* Install App Button (Desktop / Tablet, hidden on < sm to keep 390px header spacious) */}
+            <div className="hidden sm:block shrink-0">
+              <PWAInstallButton variant="compact" showFallbackGuide />
+            </div>
 
             {/* Notification Button */}
             <button
@@ -287,23 +297,26 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="fixed inset-y-0 left-0 w-72 sm:w-80 max-w-[85vw] bg-zinc-950 border-r border-zinc-800 shadow-2xl flex flex-col p-4 sm:p-5 overflow-y-auto animate-in slide-in-from-left duration-200 z-50">
             {/* Drawer Header: Logo + Close Button */}
             <div className="flex items-center justify-between pb-4 border-b border-zinc-800/80">
-              <div
+              <button
+                type="button"
                 onClick={() => {
                   onSelectTab('dashboard');
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2.5 text-left cursor-pointer"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-pink-500 shadow-md shadow-violet-500/20">
-                  <Sparkles className="h-4 w-4 text-white" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-1 shadow-md shadow-sky-500/15 overflow-hidden shrink-0">
+                  <img
+                    src={logoSrc}
+                    alt="Logo SIMEI"
+                    className="h-full w-full object-contain"
+                  />
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-base font-bold text-white">EndorseHub</span>
-                  <span className="rounded bg-gradient-to-r from-violet-500 to-pink-500 px-1.5 py-0.5 text-[9px] font-bold text-white uppercase">
-                    Pro
-                  </span>
+                <div>
+                  <span className="block text-base font-bold leading-tight text-white">SIMEI</span>
+                  <span className="block text-[10px] text-zinc-400">Manajemen Endorsement</span>
                 </div>
-              </div>
+              </button>
 
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -454,6 +467,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span>Kelola & Tambah Akun Talent</span>
                 </button>
               )}
+
+              <PWAInstallButton
+                variant="full"
+                showFallbackGuide
+                onActionComplete={() => setMobileMenuOpen(false)}
+              />
 
               <button
                 onClick={() => {

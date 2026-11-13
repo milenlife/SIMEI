@@ -70,7 +70,7 @@ export const GoogleSheetsModal: React.FC<GoogleSheetsModalProps> = ({
 
     try {
       const result = await createEndorsementSpreadsheet(
-        `EndorseHub Database - ${new Date().toLocaleDateString('id-ID')}`,
+        `SIMEI Database - ${new Date().toLocaleDateString('id-ID')}`,
         endorsements
       );
       onSetSpreadsheetId(result.spreadsheetId);

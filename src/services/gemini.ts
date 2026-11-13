@@ -238,7 +238,7 @@ Menginfokan perkembangan kampanye *${params.campaignTitle}* bersama *${params.ta
 ${params.notes ? `Catatan: ${params.notes}\n\n` : ''}Mohon kesediaannya untuk memeriksa atau konfirmasi tindak lanjutnya ya Kak. Terima kasih banyak atas kerjasamanya! 🙏✨
 
 Salam hangat,
-*EndorseHub Campaign Team*`;
+*SIMEI Campaign Team*`;
   } else {
     return `Halo Kak *${params.talentName}*! ✨
 

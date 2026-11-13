@@ -298,7 +298,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <Lock className="h-3 w-3 text-zinc-500 ml-auto" />
                 </label>
                 <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-zinc-300 font-mono text-[11px] truncate">
-                  {currentUser.email || 'user@endorsehub.com'}
+                  {currentUser.email || 'user@simei.id'}
                 </div>
               </div>
 

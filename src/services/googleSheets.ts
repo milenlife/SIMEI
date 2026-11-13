@@ -45,7 +45,7 @@ export async function createEndorsementSpreadsheet(
     },
     body: JSON.stringify({
       properties: {
-        title: title || `EndorseHub Database - ${new Date().toISOString().split('T')[0]}`,
+        title: title || `SIMEI Database - ${new Date().toISOString().split('T')[0]}`,
       },
       sheets: [
         {

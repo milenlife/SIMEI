@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { UserAccount, UserProfile } from '../types/endorsement';
 import { authenticateUser, changeAccountPassword } from '../utils/accountLogic';
+import { resolvePublicAssetPath } from '../utils/pwaLogic';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface LoginPageProps {
   accounts: UserAccount[];
@@ -96,15 +98,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
       <div className="relative w-full max-w-md space-y-6">
         {/* App Logo & Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-pink-500 shadow-xl shadow-violet-600/25">
-            <Sparkles className="h-7 w-7 text-white" />
+        <div className="text-center space-y-2.5">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white p-1.5 shadow-xl shadow-sky-500/20 ring-1 ring-white/20">
+            <img
+              src={resolvePublicAssetPath('simei-logo.png', import.meta.env.BASE_URL)}
+              alt="Logo SIMEI"
+              className="h-full w-full object-contain"
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center justify-center gap-2">
-            EndorseHub
-            <span className="rounded bg-gradient-to-r from-violet-500 to-pink-500 px-2 py-0.5 text-xs font-bold text-white uppercase tracking-wider">
-              Pro
-            </span>
+            SIMEI
           </h1>
           <p className="text-xs text-zinc-400">
             Sistem Manajemen Endorsement Influencer & Brand (10 Tahapan)
@@ -138,7 +141,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@endorsehub.com atau creator.id"
+                  placeholder="nama@simei.id atau creator.id"
                   className="w-full rounded-xl border border-zinc-800 bg-zinc-950 pl-10 pr-4 py-2.5 text-white placeholder-zinc-500 focus:border-violet-500 focus:outline-none"
                 />
               </div>
@@ -224,6 +227,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </svg>
             <span>Masuk dengan Akun Google (Workspace & Sheets)</span>
           </button>
+
+          {/* Mobile App (PWA) Install Option */}
+          <PWAInstallButton variant="subtle" showFallbackGuide />
         </div>
       </div>
 
